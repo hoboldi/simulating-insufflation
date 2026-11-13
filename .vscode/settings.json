@@ -1,0 +1,4 @@
+{
+  "markdown.marp.themes": ["./kick-off/slides/theme/pair-b.css"],
+  "markdown.marp.enableHtml": true
+}

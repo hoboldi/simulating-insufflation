@@ -1,0 +1,6 @@
+slides/build/
+animations/media/
+papers/*.pdf
+__pycache__/
+animations/.venv/
+animations/cache/

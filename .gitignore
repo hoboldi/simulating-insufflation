@@ -1,0 +1,14 @@
+# Python / uv
+.venv/
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+
+# Generated render output
+kick-off/animations/media/
+kick-off/animations/cache/
+
+# OS
+.DS_Store

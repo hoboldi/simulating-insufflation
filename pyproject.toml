@@ -1,0 +1,9 @@
+[project]
+name = "simulating-insufflation"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "manim>=0.22.1",
+    "matplotlib>=3.11.2",
+    "numpy>=2.5.4",
+]
