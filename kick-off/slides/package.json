@@ -1,0 +1,16 @@
+{
+  "name": "pair-b-kickoff-slides",
+  "private": true,
+  "description": "Marp deck for the Pair B kick-off. pdf/pptx/png need Chrome, Edge or Firefox.",
+  "scripts": {
+    "html": "marp slides.md -o build/slides.html && ln -sfn ../assets build/assets",
+    "pdf": "marp slides.md --pdf -o build/slides.pdf",
+    "pptx": "marp slides.md --pptx -o build/slides.pptx",
+    "png": "marp slides.md --images png -o build/slide.png",
+    "preview": "marp --server .",
+    "layouts": "marp layouts.md -o build/layouts.html"
+  },
+  "devDependencies": {
+    "@marp-team/marp-cli": "4.5.1"
+  }
+}

@@ -1,0 +1,104 @@
+/* @theme pair-b */
+/* Minimal academic theme for the Pair B kick-off deck.
+   Layout classes:  title | divider | (default content slide)
+   HTML helpers:    .cols / .cols-wide-left / .cols-wide-right, .takeaway, .question, .cite, .muted
+   See layouts.md for usage of every component. */
+
+@import 'default';
+
+:root {
+  --accent: #1e5aa8;
+  --accent-soft: #eaf1fa;
+  --warn: #c2620a;
+  --warn-soft: #fdf3e8;
+  --fg: #1f2933;
+  --muted: #6b7785;
+  --bg: #ffffff;
+}
+
+section {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 64px 72px 72px;
+  font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 26px;
+  line-height: 1.4;
+  color: var(--fg);
+  background: var(--bg);
+}
+
+section h1 {
+  font-size: 1.5em;
+  color: var(--accent);
+  margin: 0 0 0.6em;
+  padding-bottom: 0.2em;
+  border-bottom: 3px solid var(--accent);
+}
+
+section h2 { font-size: 1.1em; color: var(--fg); margin: 0.4em 0 0.3em; }
+section h3 { font-size: 0.95em; color: var(--muted); margin: 0.3em 0; }
+section strong { color: var(--accent); }
+section a { color: var(--accent); }
+section ul, section ol { margin: 0.2em 0; }
+section li { margin: 0.15em 0; }
+section img { max-width: 100%; }
+section table { font-size: 0.8em; }
+
+/* Footer = current part, pagination bottom-right */
+footer { left: 72px; bottom: 26px; font-size: 0.5em; color: var(--muted); }
+section::after { right: 72px; bottom: 26px; font-size: 0.55em; color: var(--muted); }
+
+/* ---------- Title slide ---------- */
+section.title {
+  justify-content: center;
+  background: linear-gradient(135deg, var(--accent) 0%, #0d3266 100%);
+  color: #fff;
+}
+section.title h1 { font-size: 2em; color: #fff; border: none; margin-bottom: 0.2em; }
+section.title h2 { color: #dbe7f6; font-weight: 400; }
+section.title p { color: #dbe7f6; font-size: 0.8em; }
+section.title footer, section.title::after { display: none; }
+
+/* ---------- Section divider ---------- */
+section.divider {
+  justify-content: center;
+  background: var(--accent);
+  color: #fff;
+}
+section.divider h1 { font-size: 2.2em; color: #fff; border: none; margin: 0; }
+section.divider p { color: #dbe7f6; font-size: 0.9em; max-width: 80%; }
+section.divider footer { color: #dbe7f6; }
+section.divider::after { color: #dbe7f6; }
+
+/* ---------- Columns ---------- */
+.cols, .cols-wide-left, .cols-wide-right {
+  display: grid;
+  gap: 1.4em;
+  align-items: start;
+}
+.cols            { grid-template-columns: 1fr 1fr; }
+.cols-wide-left  { grid-template-columns: 3fr 2fr; }
+.cols-wide-right { grid-template-columns: 2fr 3fr; }
+
+/* ---------- Boxes ---------- */
+.takeaway, .question {
+  margin-top: auto;               /* pushes the box to the bottom of the slide */
+  padding: 0.45em 0.9em;
+  border-radius: 4px;
+  font-size: 0.85em;
+}
+.takeaway { background: var(--accent-soft); border-left: 6px solid var(--accent); }
+.question { background: var(--warn-soft);   border-left: 6px solid var(--warn); }
+.takeaway p, .question p { margin: 0.2em 0; }
+
+/* ---------- Small print ---------- */
+.cite {
+  position: absolute;
+  left: 72px;
+  bottom: 48px;
+  font-size: 0.48em;
+  color: var(--muted);
+}
+.muted { color: var(--muted); }
+.center { text-align: center; }
