@@ -113,6 +113,25 @@ style: |
   .bk td { font-size: 20px; vertical-align: top; }
   .bk th { text-align: left; }
   .owners { position: absolute; bottom: 40px; left: 64px; font-size: 16px; color: #8A8A8A; }
+
+  /* Pair B (3D vision) slides */
+  .data { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; margin-top: 12px; }
+  .data h3 { color: #F0AC5F; font-size: 26px; margin: 0 0 6px 0; }
+  .data .ph { height: 170px; margin: 0 0 8px 0; padding: 10px 18px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 17px; color: #CFCFCF; }
+  .data li { font-size: 21px; margin: 2px 0; }
+  .io { display: grid; grid-template-columns: 150px 1fr 1fr; column-gap: 24px; align-items: center; font-size: 19px; line-height: 1.3; }
+  .io > div { padding: 7px 4px; border-bottom: 1px solid #333; }
+  .io .hd { font-size: 22px; border-bottom: 0; }
+  .io .hd b { color: #F0AC5F; font-weight: 400; font-family: Cambria, Caladea, Georgia, serif; font-size: 25px; }
+  .io .fig { border-bottom: 0; padding: 0 0 6px 0; }
+  .io .fig img { display: block; width: 100%; height: 150px; object-fit: contain; background: #fff; border-radius: 8px; padding: 4px; box-sizing: border-box; }
+  .io .lbl { color: #8A8A8A; font-size: 15px; letter-spacing: .06em; text-transform: uppercase; }
+  .flow .st.q { border-style: dashed; border-color: #F7D96F; background: rgba(247,217,111,.06); }
+  .flow .st.q b { color: #F7D96F; }
+  .oq { border: 1px dashed #F7D96F; border-radius: 8px; padding: 6px 16px; background: rgba(247,217,111,.06); font-size: 18px; margin-top: 4px; }
+  .oq p { margin: 2px 0; }
+  .oq ul { margin: 2px 0; }
+  .oq li { margin: 1px 0; }
 ---
 <!-- _class: title -->
 <!-- _paginate: false -->
@@ -267,92 +286,124 @@ END OF HIDDEN SLIDE -->
 </div>
 
 ---
-# Literature: from video pixels to the CT
+<div class="tag">3D vision · our data</div>
+
+# Two kinds of video: mono pigs, stereo humans
+
+<span class="muted">The simulation predicts the insufflated shape. The video shows the real one, but only what the camera sees. What we can measure depends on the camera.</span>
+
+<div class="data">
+<div>
+
+<h3>Porcine · 16 procedures</h3>
+
+<div class="ph">Visual from the cluster: one laparoscope frame, next to the post-insufflation CT surface with the tracked camera path</div>
+
+- **Mono** laparoscope, tracked
+- CT **before and after** insufflation
+- One camera: depth only **up to scale**
+- Ground truth: the post-insufflation CT
+
+</div>
+<div>
+
+<h3>Human · 3 cases, more coming</h3>
+
+<div class="ph">Visual from the cluster: one left/right stereo pair, next to the pre-op CT surface with the tracked camera path</div>
+
+- **Stereo** laparoscope, tracked (robotic and conventional)
+- Pre-op CT only
+- Two cameras: **metric** depth
+- No ground truth: qualitative check only
+
+</div>
+</div>
+
+<!--
+- Transition from the simulation part: the simulation gives a prediction of the insufflated abdomen. The video is our only observation of the real one, inside the patient, but only of the surface the camera sees.
+- Porcine: 16 procedures, one camera. From one camera you can't tell a small, near scene from a large, far one, so the depth has no absolute scale. But we have the CT after insufflation, so we can check our reconstruction against the real shape.
+- Human: 3 cases so far, stereo. Two cameras a known distance apart give depth in millimetres directly. But there is no CT after insufflation, so we can only check the result qualitatively.
+- Both are tracked. The next slide shows what that gives us.
+-->
+
+---
+<div class="tag">3D vision · from video to the CT</div>
+
+# Putting the video into the CT
 
 <div class="wide">
 <div>
 
-![w:640](assets/graph.png)
+<!-- TODO: add or swap in the tracking photo from Max's slides -->
+![w:600](assets/graph.png)
 
 $$P_{CT} = R^{\top}\big(Z\,K^{-1}p - t\big)$$
 
 </div>
 <div>
 
-- **Optical tracker:** IR stereo camera, sees reflective *marker arrays* (3–4 balls in a known pattern) → their 6 DOF pose
-- **Registration:** CT ↔ patient array. Multiply along the graph → *CT → camera*, per frame
-- **FoundationStereo [1]:** stereo, zero-shot → **metric** depth (human)
-- **Depth Anything 3 [2]:** mono → depth **up to scale**; tracked poses fix the scale (porcine)
+1. The **tracker** follows marker arrays on the laparoscope and on the patient
+2. With **calibration** and **registration**, that gives the camera pose in the CT for every frame
+3. So every pixel is a **ray** in the CT
 
 </div>
 </div>
 
-<div class="cite">
-
-[1] Wen et al., FoundationStereo: Zero-Shot Stereo Matching, CVPR 2025 · [2] Lin et al., Depth Anything 3, arXiv 2025
-
-</div>
+<div class="box">Known: where the camera is and where each pixel looks. <strong>Missing: how far along the ray the tissue is, the depth Z.</strong></div>
 
 <!--
-- The optical tracker sees marker arrays on the laparoscope and the patient. With calibration and registration this gives us, every frame, where the camera is in the CT.
-- So each pixel becomes a ray in the CT; we only miss the depth along it.
-- FoundationStereo gives metric depth from the stereo laparoscope in the human cases. Depth Anything 3 gives depth from mono video, but only up to scale, which we fix with the tracked camera motion on the porcine data.
-- The tracker sees only the marker arrays, not the anatomy: the insufflation is invisible to it.
-
+- The optical tracker is an infrared stereo camera. It sees the marker arrays (3 to 4 reflective balls) on the laparoscope and on the patient, and reports their pose.
+- Two links are fixed and measured once: hand-eye calibration (marker array to camera tip) and registration (CT to patient array). Two links are tracked every frame. Multiplying along the graph gives the camera pose in the CT:
+  T_cam<-CT = T_cam<-lap · T_lap<-trk · T_trk<-pat · T_pat<-CT
+- The formula, right to left: p = (u, v, 1) is the pixel. K⁻¹p undoes the lens and gives the ray direction. Z·K⁻¹p walks to depth Z along it, which is the point in camera coordinates in mm. −t and Rᵀ undo the camera pose (Rᵀ = R⁻¹), which gives the point in the CT.
+- The tracker sees only the marker arrays, not the tissue. The insufflation is invisible to it, so the depth has to come from the video.
+- First practical step: project the post-insufflation CT into the porcine video. If it lines up, the chain is right before any depth network is involved.
 -->
 
 ---
-# Literature: reconstruction with DA3 and BridgeSplat
+<div class="tag">3D vision · methods</div>
 
-<div class="paper">
+# Methods: getting the depth
 
-![w:540](assets/bridgesplat_fig1.png)
+<div class="io">
+  <div></div>
+  <div class="hd"><b>FoundationStereo</b> [1] <span class="chip hu">human · stereo</span></div>
+  <div class="hd"><b>Depth Anything 3</b> [2] <span class="chip pc">porcine · mono</span></div>
 
+  <div></div>
+  <div class="fig"><img src="assets/fs_fig2.png" alt="FoundationStereo architecture"></div>
+  <div class="fig"><img src="assets/da3_fig2.png" alt="Depth Anything 3 architecture"></div>
+
+  <div class="lbl">Input</div>
+  <div>rectified left + right image</div>
+  <div>one or many frames, optionally with K and the tracked poses</div>
+
+  <div class="lbl">Output</div>
+  <div>disparity d per pixel → depth Z = f·B / d, in mm</div>
+  <div>depth + ray per pixel, consistent across frames, scale unknown</div>
+
+  <div class="lbl">How we use it</div>
+  <div>unproject with the tracked pose → metric point cloud in the CT</div>
+  <div>scale from the tracked camera motion → point cloud in the CT, checked against the post-insufflation CT</div>
 </div>
 
-<div class="cols tight">
-<div>
-
-**Depth Anything 3 [1]**
-- Takes all frames of a video at once and predicts a depth map and a ray map for each; origin + depth × direction gives a 3D point per pixel, so all frames fuse into one point cloud.
-- With our tracked poses as input and the scale fixed in mm, that point cloud is the insufflated surface directly in CT coordinates.
-
-</div>
-<div>
-
-**BridgeSplat [2]** <span class="muted">(figure above)</span>
-- A monocular, non-rigid reconstruction method for laparoscopic video.
-- It would be used to register our patient/porcine data for our alignment with the simulation.
-- Same setup as our porcine data: **CT + tracked monocular laparoscope video**
-
-</div>
-</div>
+<div class="box"><strong>With these methods today:</strong> the visible surface, per frame, in CT coordinates. <strong>Not yet:</strong> one consistent surface over time, or anything the camera doesn't see.</div>
 
 <div class="cite">
 
-[1] Lin et al., Depth Anything 3: Recovering the Visual Space from Any Views, arXiv 2025 · [2] Fehrentz et al., BridgeSplat: Bidirectionally Coupled CT and Non-Rigid Gaussian Splatting for Deformable Intraoperative Surgical Navigation, MICCAI 2025
+[1] Wen et al., FoundationStereo: Zero-Shot Stereo Matching, CVPR 2025 · [2] Lin et al., Depth Anything 3: Recovering the Visual Space from Any Views, arXiv 2025
 
 </div>
 
 <!--
-- BridgeSplat works on exactly our kind of data. It builds a mesh from the CT, attaches Gaussian splats to it, and renders each frame from the tracked pose.
-- Since the pose is known and the Gaussians can't leave the mesh, the only way to match the video is to deform the mesh. That deformed mesh is the real tissue shape in CT coordinates.
-
-How BridgeSplat works (briefly):
-- Initialisation: segment the CT into a surface mesh and register it rigidly into the tracker frame. Attach flat 3D Gaussians to the mesh triangles: position fixed by barycentric coordinates, rotation fixed to the triangle normal; only the two in-plane scales, opacity and colour are learned.
-- First frame: render, find which Gaussians are visible, and pick anchor vertices among them. Each anchor gets a learnable displacement; all other vertices are interpolated from the anchors (the deformation field).
-- Every frame: deform the mesh → the Gaussians move with it → render from the tracked pose → compare with the real frame (photometric loss, surgical tools masked out) → gradients flow back to the anchor displacements.
-- Regulariser: ARAP (as-rigid-as-possible) lets local patches rotate but not stretch, which keeps the deformation plausible where one camera sees little.
-- Result: the fitted deformation is carried back to the CT, so the CT follows the tissue ("bidirectionally coupled").
-
-How Depth Anything 3 works (briefly):
-- Input: any number of frames, with or without camera poses. Known poses (our tracking) can be fed in through a camera token.
-- Backbone: a plain DINOv2 transformer. The first 2/3 of the layers attend within each image; the last 1/3 alternate between within-image and across all frames. That cross-frame attention is what makes the views consistent with each other.
-- Head (dual-DPT): one shared feature reassembly, then two branches: a depth map and a ray map (per pixel the ray origin + direction). 3D point = origin + depth × direction.
-- Training: a teacher trained only on synthetic data gives sharp, complete depth; it is aligned to noisy real depth (scale + shift fit) to make pseudo-labels for the multi-view student.
-- Catch for us: the depth is only up to scale, so the metric scale comes from the tracked camera motion (or the CT, or stereo).
-
+- Both are pretrained and used as they are, zero-shot. We don't train them.
+- FoundationStereo: the same point appears shifted by d pixels between the left and right image. With focal length f and baseline B (distance between the two cameras) the depth is Z = f·B/d, directly in mm. It runs per frame. Figure: features from both images, a cost volume that compares every possible shift, then iterative refinement of the disparity.
+- Depth Anything 3: one transformer looks at all frames together, so the depths agree across views. It predicts a depth map and a ray map per frame; a 3D point is ray origin + depth × direction. Our tracked poses can be given as input. From one camera the scale is unknown; the tracked camera motion is in mm, which fixes it.
+- Then the same step for both: the formula from the previous slide puts every pixel into the CT.
+- What we get today is the surface the camera sees, frame by frame. Turning that into one surface to compare with the simulation is the open question on the next slide.
 -->
+
+<!-- BridgeSplat moved to Pair A (supervisor feedback, 25.11). The full explanation is in slides.md, part 4. -->
 
 ---
 # Proposed solution
@@ -367,7 +418,7 @@ How Depth Anything 3 works (briefly):
 </div>
 
 <div class="mid">
-<div class="st"><b>⇅ Compare</b> in CT coordinates → <b>tune simulation parameters</b></div>
+<div class="st"><b>⇅ Compare</b> in CT coordinates, where the camera saw → <b>tune simulation parameters</b></div>
 <div class="ar">→</div>
 <div class="st"><b>Evaluate</b> vs. post-insufflation CT <span class="chip pc">porcine</span></div>
 </div>
@@ -378,9 +429,18 @@ How Depth Anything 3 works (briefly):
 <div class="ar">→</div>
 <div class="st"><b>Depth</b>DA3 [2] <span class="chip pc">porcine</span><br>FoundationStereo [3] <span class="chip hu">human</span></div>
 <div class="ar">→</div>
-<div class="st"><b>BridgeSplat [4]</b>deform the CT mesh to match the video</div>
+<div class="st q"><b>Reconstruction ?</b>open question, see below</div>
 <div class="ar">→</div>
 <div class="st"><b>Reconstructed surface</b>in CT coordinates</div>
+</div>
+
+<div class="oq">
+
+**Open question, and our main challenge:** how do we turn per-frame depth into one surface to compare with the simulation?
+- **Fuse:** unproject all frames with the tracked poses into one point cloud. Simple, but it assumes nothing moves.
+- **Build a mesh** from the fused points and compare surface to surface.
+- **Fit a mesh:** deform the pre-op CT or the simulated mesh until it matches the depth, as in BridgeSplat [4]. This keeps the correspondence with the simulation.
+
 </div>
 
 <div class="cite">
@@ -391,8 +451,11 @@ How Depth Anything 3 works (briefly):
 
 <!--
 - Top: Pair A simulates the insufflation from the pre-op CT, following Bano et al.
-- Bottom: we reconstruct the real insufflated surface from the tracked video: depth from DA3 on porcine and FoundationStereo on human, then BridgeSplat deforms the CT mesh to match.
+- Bottom: we reconstruct the real insufflated surface from the tracked video: depth from DA3 on porcine and FoundationStereo on human, put into the CT with the tracked poses.
+- How exactly we get from per-frame depth to one surface is still open. That is the main challenge on our side. Three options: fuse all frames into one point cloud (simple, but the scene changes while the gas comes in); build a mesh from it; or deform a mesh (pre-op CT or the simulated one) to match the depth, as in BridgeSplat, which keeps the vertex-to-vertex correspondence with the simulation.
 - Both meet in CT coordinates. The mismatch tunes the simulation's parameters, and on the porcine data we evaluate against the real post-insufflation CT, with and without the video refinement.
+- The video only sees part of the surface, so the comparison counts only the region the camera saw. The physics then carries the correction to the parts it can't see (e.g. wall too stiff → lower stiffness → organs behind move too).
+- Humans have no post-insufflation CT; the only check there is that the tracked camera must lie inside the gas, not inside tissue.
 -->
 
 
@@ -531,4 +594,24 @@ BACKUP, only if asked how our project differs from the literature.
 - Bano (Bano et al.): FEM insufflation from the pre-op CT, but no video and only 2 pigs.
 - DejaVu (Haouchine et al.): pre-op mesh + physical model in SOFA, manually registered to a single intra-op image. Its discussion says the registration has to handle the large deformation from insufflation pressure, and that patient-specific parameters are an open challenge. That is our gap.
 - MPM: particles instead of a mesh, EndoGSim as an example.
+-->
+
+---
+<!-- _paginate: false -->
+<div class="tag">Backup · 3D vision · beyond our scope</div>
+
+# If it works: what comes later
+
+- **Continuous alignment:** keep the CT-based simulation and the video aligned through the whole surgery, not only at the start
+- **Instruments in 3D:** reconstruct the tools from depth + segmentation
+- **Tool–tissue interaction:** feed what the tools do to the tissue into the simulation
+- **Beyond the visible:** estimate how tissue the camera can't see deforms
+
+<div class="warn"><strong>Our scope:</strong> insufflation only. Depth of the visible surface in CT coordinates, compared with the simulation and, on the pigs, with the post-insufflation CT.</div>
+
+<!--
+BACKUP, only if asked where this leads.
+- None of this is part of our project. It's where the group wants to go if aligning simulation and video works for insufflation.
+- Instruments: depth gives where the tool surface is, segmentation says which pixels are the tool.
+- Beyond the visible: the simulation links what the camera sees to what it doesn't, so a correction in the visible part also moves the hidden part.
 -->
